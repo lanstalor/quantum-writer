@@ -1,0 +1,46 @@
+
+<!-- templates/story.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ story.metadata.title }} - Quantum Writer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>{{ story.metadata.title }}</h1>
+        <p>{{ story.metadata.genre }} | {{ story.chapters|length }} chapters | {{ story.metadata.word_count }} words</p>
+        
+        <div class="story-content">
+            {% for chapter in story.chapters %}
+                <div class="chapter">
+                    <h2>Chapter {{ chapter.number }}: {{ chapter.title }}</h2>
+                    <div class="chapter-text">
+                        {{ chapter.content|safe|replace('\n', '<br>') }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <div class="controls">
+            <h3>Continue the Story</h3>
+            <form action="{{ url_for('continue_story') }}" method="post">
+                <div class="form-group">
+                    <label>Guidance for next chapter:</label>
+                    <textarea name="prompt" rows="4" placeholder="What should happen next? Any specific elements to include?"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Hidden guidance notes (will be stored in Chinese):</label>
+                    <textarea name="hidden_note" rows="2" placeholder="Notes for narrative continuity that won't appear in the story"></textarea>
+                </div>
+                
+                <button type="submit">Generate Next Chapter</button>
+            </form>
+            
+            <a href="{{ url_for('analyze_story') }}" class="button">Analyze Story</a>
+            <a href="{{ url_for('index') }}" class="button">Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>

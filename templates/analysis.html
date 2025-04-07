@@ -1,0 +1,19 @@
+<!-- templates/analysis.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Analysis - {{ story.metadata.title }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Story Analysis: {{ story.metadata.title }}</h1>
+        
+        <div class="analysis-content">
+            {{ analysis|safe|replace('\n', '<br>') }}
+        </div>
+        
+        <a href="{{ url_for('view_story') }}" class="button">Back to Story</a>
+    </div>
+</body>
+</html>
