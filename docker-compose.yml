@@ -1,0 +1,200 @@
+version: '3.9'
+
+services:
+  # Frontend
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8001
+    depends_on:
+      - story-service
+      - ai-service
+
+  # API Gateway
+  gateway:
+    image: kong:3.5
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+    volumes:
+      - ./infrastructure/kong/kong.yml:/kong/kong.yml
+
+  # Story Service
+  story-service:
+    build:
+      context: ./services/story
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8010:8000"
+    volumes:
+      - ./services/story:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_NAME=story-service
+    depends_on:
+      - db
+      - redis
+
+  # AI Service
+  ai-service:
+    build:
+      context: ./services/ai
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8011:8000"
+    volumes:
+      - ./services/ai:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
+      - REDIS_URL=redis://redis:6379
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - SERVICE_NAME=ai-service
+    depends_on:
+      - db
+      - redis
+
+  # Analysis Service
+  analysis-service:
+    build:
+      context: ./services/analysis
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8012:8000"
+    volumes:
+      - ./services/analysis:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
+      - REDIS_URL=redis://redis:6379
+      - VECTOR_DB_URL=http://qdrant:6333
+      - SERVICE_NAME=analysis-service
+    depends_on:
+      - db
+      - redis
+      - qdrant
+
+  # Context Service
+  context-service:
+    build:
+      context: ./services/context
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8013:8000"
+    volumes:
+      - ./services/context:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
+      - REDIS_URL=redis://redis:6379
+      - VECTOR_DB_URL=http://qdrant:6333
+      - SERVICE_NAME=context-service
+    depends_on:
+      - db
+      - redis
+      - qdrant
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8014:8000"
+    volumes:
+      - ./services/auth:/app
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your-secret-key-change-this
+      - SERVICE_NAME=auth-service
+    depends_on:
+      - db
+      - redis
+
+  # WebSocket Service
+  websocket-service:
+    build:
+      context: ./services/websocket
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8015:8000"
+    volumes:
+      - ./services/websocket:/app
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - SERVICE_NAME=websocket-service
+    depends_on:
+      - redis
+
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=quantum_writer
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  # Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+
+  # Elasticsearch
+  elasticsearch:
+    image: elasticsearch:8.11.3
+    environment:
+      - discovery.type=single-node
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+
+  # Development Tools
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@quantum-writer.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  redis_data:
+  qdrant_data:
+  es_data:
