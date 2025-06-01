@@ -34,4 +34,9 @@ ENV/
 .env
 
 # Miscellaneous
-.DS_Store 
+.DS_Store
+
+# Allow frontend utilities
+!frontend/src/lib/
+!frontend/src/lib/utils.ts
+

@@ -62,4 +62,20 @@ python app.py
 - Anthropic Claude API
 - NLTK
 - spaCy
-- Python 3.8+ 
+- Python 3.8+
+
+## Running with Docker Compose
+
+The project ships with a development environment that starts all microservices,
+databases, and the frontend using Docker Compose. After creating a `.env` file
+with your API keys you can spin up everything with:
+
+```bash
+docker-compose up --build
+```
+
+Once running you'll have:
+
+- Frontend at `http://localhost:3000`
+- API Gateway at `http://localhost:8000`
+- Individual service docs under `http://localhost:8010` through `8015`
