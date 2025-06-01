@@ -1,0 +1,14 @@
+_format_version: "3.0"
+services:
+  - name: story-service
+    url: http://story-service:8000
+    routes:
+      - name: story
+        paths:
+          - /api/v1/stories
+  - name: ai-service
+    url: http://ai-service:8000
+    routes:
+      - name: ai
+        paths:
+          - /api/v1/ai

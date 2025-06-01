@@ -24,7 +24,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies:
+3. Install dependencies for the legacy Flask app (optional):
 ```bash
 pip install -r requirements.txt
 ```
@@ -36,14 +36,16 @@ ANTHROPIC_API_KEY=your_api_key_here
 
 ## Usage
 
-1. Run the web application:
+1. Start the microservices with Docker Compose:
+```bash
+docker-compose up -d
+```
+
+2. Legacy Flask demo (optional):
 ```bash
 python app.py
 ```
-
-2. Open your browser and navigate to `http://localhost:5000`
-
-3. Initialize a new story or continue an existing one
+Then open `http://localhost:5000`
 
 ## Project Structure
 
@@ -55,6 +57,13 @@ python app.py
 - `context/`: Sample story content
 - `templates/`: Web UI templates
 - `data/`: Saved story data
+- `services/`: FastAPI microservices
+  - `story`: story CRUD and branching
+  - `ai`: placeholder AI generation service
+  - `analysis`: simple analysis endpoints
+  - `context`: context optimization service
+  - `auth`: stub JWT auth service
+  - `websocket`: WebSocket echo server
 
 ## Dependencies
 
@@ -62,4 +71,15 @@ python app.py
 - Anthropic Claude API
 - NLTK
 - spaCy
-- Python 3.8+ 
+
+## Testing
+
+Each service contains a small pytest suite. Run all tests with:
+```bash
+make test
+```
+
+## Requirements
+
+- Python 3.11+
+- Docker
