@@ -24,7 +24,7 @@ python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 ```
 
-3. Install dependencies for the legacy Flask app (optional):
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
@@ -36,16 +36,14 @@ ANTHROPIC_API_KEY=your_api_key_here
 
 ## Usage
 
-1. Start the microservices with Docker Compose:
-```bash
-docker-compose up -d
-```
-
-2. Legacy Flask demo (optional):
+1. Run the web application:
 ```bash
 python app.py
 ```
-Then open `http://localhost:5000`
+
+2. Open your browser and navigate to `http://localhost:5000`
+
+3. Initialize a new story or continue an existing one
 
 ## Project Structure
 
@@ -57,13 +55,6 @@ Then open `http://localhost:5000`
 - `context/`: Sample story content
 - `templates/`: Web UI templates
 - `data/`: Saved story data
-- `services/`: FastAPI microservices
-  - `story`: story CRUD and branching
-  - `ai`: placeholder AI generation service
-  - `analysis`: simple analysis endpoints
-  - `context`: context optimization service
-  - `auth`: stub JWT auth service
-  - `websocket`: WebSocket echo server
 
 ## Dependencies
 
@@ -71,15 +62,20 @@ Then open `http://localhost:5000`
 - Anthropic Claude API
 - NLTK
 - spaCy
+- Python 3.8+
 
-## Testing
+## Running with Docker Compose
 
-Each service contains a small pytest suite. Run all tests with:
+The project ships with a development environment that starts all microservices,
+databases, and the frontend using Docker Compose. After creating a `.env` file
+with your API keys you can spin up everything with:
+
 ```bash
-make test
+docker-compose up --build
 ```
 
-## Requirements
+Once running you'll have:
 
-- Python 3.11+
-- Docker
+- Frontend at `http://localhost:3000`
+- API Gateway at `http://localhost:8000`
+- Individual service docs under `http://localhost:8010` through `8015`

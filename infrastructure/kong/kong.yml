@@ -12,3 +12,27 @@ services:
       - name: ai
         paths:
           - /api/v1/ai
+  - name: analysis-service
+    url: http://analysis-service:8000
+    routes:
+      - name: analysis
+        paths:
+          - /api/v1/analysis
+  - name: context-service
+    url: http://context-service:8000
+    routes:
+      - name: context
+        paths:
+          - /api/v1/context
+  - name: auth-service
+    url: http://auth-service:8000
+    routes:
+      - name: auth
+        paths:
+          - /api/v1/auth
+  - name: websocket-service
+    url: http://websocket-service:8000
+    routes:
+      - name: websocket
+        paths:
+          - /ws

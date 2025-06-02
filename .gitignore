@@ -39,3 +39,4 @@ ENV/
 # Allow frontend utilities
 !frontend/src/lib/
 !frontend/src/lib/utils.ts
+
