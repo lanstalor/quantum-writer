@@ -15,7 +15,7 @@ class Chapter(Base):
     content = Column(Text, nullable=False)
     position = Column(Integer, nullable=False)
     word_count = Column(Integer, default=0)
-    metadata = Column(JSON, default={})
+    chapter_metadata = Column(JSON, default={})
     
     # Version tracking
     version = Column(Integer, default=1)

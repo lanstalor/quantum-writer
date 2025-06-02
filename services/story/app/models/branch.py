@@ -15,7 +15,7 @@ class Branch(Base):
     description = Column(Text)
     is_main = Column(Boolean, default=False)
     status = Column(String(50), default="active")  # active, merged, abandoned
-    metadata = Column(JSON, default={})
+    branch_metadata = Column(JSON, default={})
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())

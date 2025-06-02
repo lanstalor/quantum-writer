@@ -24,7 +24,11 @@ async def create_story(
     user_id: str = Depends(get_current_user),
 ):
     """Create a new story"""
+    import uuid
+    
+    story_id = str(uuid.uuid4())
     db_story = Story(
+        id=story_id,
         **story.model_dump(),
         user_id=user_id
     )
@@ -32,7 +36,8 @@ async def create_story(
     
     # Create main branch
     main_branch = Branch(
-        story_id=db_story.id,
+        id=str(uuid.uuid4()),
+        story_id=story_id,
         name="main",
         description="Main storyline",
         is_main=True

@@ -11,7 +11,7 @@ class Story(Base):
     title = Column(String(255), nullable=False)
     genre = Column(String(100))
     description = Column(Text)
-    metadata = Column(JSON, default={})
+    story_metadata = Column(JSON, default={})
     
     # User relationship (will be added with auth service)
     user_id = Column(String, nullable=False)
