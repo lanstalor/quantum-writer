@@ -104,7 +104,7 @@ class ChapterService:
             await self.db.rollback()
             return False
     
-    async def generate_chapter_with_ai(self, request: GenerateChapterRequest) -> Chapter:
+    async def generate_chapter_with_ai(self, request: GenerateChapterRequest, model: str = "groq") -> Chapter:
         """Generate a new chapter using AI service"""
         # Get story context for AI generation
         chapters = await self.get_chapters_by_story(request.story_id)
@@ -117,12 +117,12 @@ class ChapterService:
                 context_parts.append(f"Chapter {chapter.position}: {chapter.title}\n{chapter.content}")
             context = "\n\n".join(context_parts)
         
-        # Call AI service
-        ai_url = "http://ai-service:8000/api/v1/generate"  # Internal docker network
+        # Call AI service with model parameter
+        ai_url = f"http://ai-service:8000/api/v1/generate?model={model}"  # Internal docker network
         ai_request = {
             "prompt": request.prompt,
             "context": context,
-            "system_prompt": request.system_prompt or "You are a creative writing assistant continuing a story. Maintain consistency with the existing narrative and characters."
+            "system_prompt": request.system_prompt or "You are a creative writing assistant continuing a story. Maintain consistency with the existing narrative and characters. Write compelling, original fiction."
         }
         
         try:

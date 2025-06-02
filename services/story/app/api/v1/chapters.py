@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -71,12 +71,13 @@ async def get_story_chapters(
 @router.post("/generate", response_model=ChapterResponse)
 async def generate_chapter(
     request: GenerateChapterRequest,
+    model: str = Query("groq", description="AI model to use: claude, groq, gpt"),
     db: AsyncSession = Depends(get_db)
 ):
     """Generate a new chapter using AI"""
     service = ChapterService(db)
     try:
-        chapter = await service.generate_chapter_with_ai(request)
+        chapter = await service.generate_chapter_with_ai(request, model=model)
         return chapter
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

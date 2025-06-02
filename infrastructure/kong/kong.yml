@@ -3,36 +3,47 @@ services:
   - name: story-service
     url: http://story-service:8000
     routes:
-      - name: story
+      - name: stories
         paths:
           - /api/v1/stories
+        strip_path: false
+      - name: chapters
+        paths:
+          - /api/v1/chapters
+        strip_path: false
   - name: ai-service
     url: http://ai-service:8000
     routes:
       - name: ai
         paths:
+          - /api/v1/generate
           - /api/v1/ai
+        strip_path: false
   - name: analysis-service
     url: http://analysis-service:8000
     routes:
       - name: analysis
         paths:
           - /api/v1/analysis
+        strip_path: false
   - name: context-service
     url: http://context-service:8000
     routes:
       - name: context
         paths:
           - /api/v1/context
+        strip_path: false
   - name: auth-service
     url: http://auth-service:8000
     routes:
       - name: auth
         paths:
           - /api/v1/auth
+        strip_path: false
   - name: websocket-service
     url: http://websocket-service:8000
     routes:
       - name: websocket
         paths:
           - /ws
+        strip_path: false

@@ -32,6 +32,7 @@ class ChapterResponse(ChapterBase):
 class ChapterListResponse(BaseModel):
     id: str
     title: str
+    content: str
     position: int
     word_count: int
     created_at: datetime

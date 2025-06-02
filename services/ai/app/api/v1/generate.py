@@ -1,27 +1,43 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
 from app.schemas.generation import GenerationRequest, GenerationResponse, StreamChunk
 from app.services.anthropic_service import anthropic_service
+from app.services.groq_service import groq_service
+from app.services.openai_service import openai_service
 import json
 import asyncio
 
 router = APIRouter()
 
 @router.post("/generate", response_model=GenerationResponse)
-async def generate_content(request: GenerationRequest):
+async def generate_content(request: GenerationRequest, model: str = Query("groq", description="AI model to use: claude, groq, gpt")):
     """Generate story content using AI"""
     try:
         if request.stream:
             # For streaming, we'll use a different endpoint
             raise HTTPException(status_code=400, detail="Use /generate-stream for streaming responses")
         
-        content = await anthropic_service.generate_content(
-            prompt=request.prompt,
-            context=request.context,
-            system_prompt=request.system_prompt
-        )
-        
-        tokens_used = anthropic_service.estimate_tokens(content)
+        if model == "groq":
+            content = await groq_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=request.system_prompt
+            )
+            tokens_used = groq_service.estimate_tokens(content)
+        elif model == "gpt" or model == "openai":
+            content = await openai_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=request.system_prompt
+            )
+            tokens_used = openai_service.estimate_tokens(content)
+        else:  # default to claude
+            content = await anthropic_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=request.system_prompt
+            )
+            tokens_used = anthropic_service.estimate_tokens(content)
         
         return GenerationResponse(
             content=content,
@@ -65,7 +81,7 @@ async def generate_content_stream(request: GenerationRequest):
         raise HTTPException(status_code=500, detail=f"Streaming generation failed: {str(e)}")
 
 @router.post("/continue-story", response_model=GenerationResponse)
-async def continue_story(request: GenerationRequest):
+async def continue_story(request: GenerationRequest, model: str = Query("groq", description="AI model to use: claude, groq, gpt")):
     """Continue an existing story with AI generation"""
     try:
         # Add specific system prompt for story continuation
@@ -76,13 +92,27 @@ async def continue_story(request: GenerationRequest):
         if request.system_prompt:
             story_system_prompt = f"{story_system_prompt}\n\nAdditional instructions: {request.system_prompt}"
         
-        content = await anthropic_service.generate_content(
-            prompt=request.prompt,
-            context=request.context,
-            system_prompt=story_system_prompt
-        )
-        
-        tokens_used = anthropic_service.estimate_tokens(content)
+        if model == "groq":
+            content = await groq_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=story_system_prompt
+            )
+            tokens_used = groq_service.estimate_tokens(content)
+        elif model == "gpt" or model == "openai":
+            content = await openai_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=story_system_prompt
+            )
+            tokens_used = openai_service.estimate_tokens(content)
+        else:  # default to claude
+            content = await anthropic_service.generate_content(
+                prompt=request.prompt,
+                context=request.context,
+                system_prompt=story_system_prompt
+            )
+            tokens_used = anthropic_service.estimate_tokens(content)
         
         return GenerationResponse(
             content=content,

@@ -4,7 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-env/
 build/
 develop-eggs/
 dist/
@@ -16,27 +15,71 @@ lib64/
 parts/
 sdist/
 var/
+wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-
-# Virtual Environment
+MANIFEST
 venv/
+env/
 ENV/
 
-# IDE specific files
-.idea/
+# Node.js / Frontend
+node_modules/
+.next/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# IDE
 .vscode/
+.idea/
 *.swp
 *.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
 # Environment variables
 .env
 
-# Miscellaneous
-.DS_Store
+# Docker
+.dockerignore
 
-# Allow frontend utilities
-!frontend/src/lib/
-!frontend/src/lib/utils.ts
+# Logs
+logs/
+*.log
+
+# Database
+*.db
+*.sqlite
+
+# Coverage reports
+htmlcov/
+.coverage
+.pytest_cache/
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Allow frontend source files
+!frontend/src/
+!frontend/package.json
+!frontend/tsconfig.json
+!frontend/tailwind.config.ts
+!frontend/next.config.js
+!frontend/next-env.d.ts
 
