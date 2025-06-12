@@ -1,21 +1,17 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Header
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from typing import List, Optional
+from typing import List
 
 from app.db.database import get_db
 from app.models.story import Story
 from app.models.branch import Branch
 from app.schemas.story import StoryCreate, StoryUpdate, StoryResponse
+from app.core.security import get_current_user
 
 router = APIRouter()
 
 
-async def get_current_user(x_user_id: Optional[str] = Header(None)) -> str:
-    """Simple auth dependency expecting an X-User-Id header."""
-    if not x_user_id:
-        raise HTTPException(status_code=401, detail="Missing authentication")
-    return x_user_id
 
 @router.post("/", response_model=StoryResponse)
 async def create_story(

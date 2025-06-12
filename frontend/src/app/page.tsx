@@ -26,6 +26,11 @@ export default function HomePage() {
                 View Demo
               </Button>
             </Link>
+            <Link href="/login">
+              <Button size="lg" variant="outline">
+                Login
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
