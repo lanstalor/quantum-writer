@@ -5,16 +5,18 @@ from typing import List
 from app.db.database import get_db
 from app.services.chapter_service import ChapterService
 from app.schemas.chapter import (
-    ChapterCreate, ChapterUpdate, ChapterResponse, 
+    ChapterCreate, ChapterUpdate, ChapterResponse,
     ChapterListResponse, GenerateChapterRequest
 )
+from app.core.security import get_current_user
 
 router = APIRouter()
 
 @router.post("/", response_model=ChapterResponse)
 async def create_chapter(
     chapter_data: ChapterCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Create a new chapter"""
     service = ChapterService(db)
@@ -24,7 +26,8 @@ async def create_chapter(
 @router.get("/{chapter_id}", response_model=ChapterResponse)
 async def get_chapter(
     chapter_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Get a chapter by ID"""
     service = ChapterService(db)
@@ -37,7 +40,8 @@ async def get_chapter(
 async def update_chapter(
     chapter_id: str,
     chapter_data: ChapterUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Update a chapter"""
     service = ChapterService(db)
@@ -49,7 +53,8 @@ async def update_chapter(
 @router.delete("/{chapter_id}")
 async def delete_chapter(
     chapter_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Delete a chapter"""
     service = ChapterService(db)
@@ -61,7 +66,8 @@ async def delete_chapter(
 @router.get("/story/{story_id}", response_model=List[ChapterListResponse])
 async def get_story_chapters(
     story_id: str,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Get all chapters for a story"""
     service = ChapterService(db)
@@ -72,7 +78,8 @@ async def get_story_chapters(
 async def generate_chapter(
     request: GenerateChapterRequest,
     model: str = Query("groq", description="AI model to use: claude, groq, gpt"),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Generate a new chapter using AI"""
     service = ChapterService(db)
@@ -86,7 +93,8 @@ async def generate_chapter(
 async def reorder_chapters(
     story_id: str,
     chapter_positions: dict,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user)
 ):
     """Reorder chapters in a story"""
     service = ChapterService(db)
