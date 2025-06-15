@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { useStory, useStoryChapters, useGenerateChapter } from '@/hooks/useStories';
+import { useStory, useStoryChapters, useGenerateChapter, useExportStory } from '@/hooks/useStories';
 import { ArrowLeft, Plus, BookOpen, Sparkles, Edit, Calendar } from 'lucide-react';
 import Link from 'next/link';
 
@@ -33,6 +33,7 @@ export default function StoryPage({ params }: StoryPageProps) {
   const { data: story, isLoading: storyLoading, error: storyError } = useStory(params.id);
   const { data: chapters, isLoading: chaptersLoading } = useStoryChapters(params.id);
   const generateChapterMutation = useGenerateChapter();
+  const exportStoryMutation = useExportStory();
 
   useEffect(() => {
     if (!getToken()) {
@@ -58,6 +59,21 @@ export default function StoryPage({ params }: StoryPageProps) {
       setIsGenerateDialogOpen(false);
     } catch (error) {
       console.error('Failed to generate chapter:', error);
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const markdown = await exportStoryMutation.mutateAsync(params.id);
+      const blob = new Blob([markdown], { type: 'text/markdown' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${story?.title ?? 'story'}.md`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to export story:', error);
     }
   };
 
@@ -120,13 +136,17 @@ export default function StoryPage({ params }: StoryPageProps) {
           </div>
         </div>
         
-        <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg">
-              <Sparkles className="h-4 w-4 mr-2" />
-              Generate Chapter
-            </Button>
-          </DialogTrigger>
+        <div className="flex space-x-2">
+          <Button variant="outline" size="lg" onClick={handleExport}>
+            Download Markdown
+          </Button>
+          <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size="lg">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Generate Chapter
+              </Button>
+            </DialogTrigger>
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Generate New Chapter with AI</DialogTitle>

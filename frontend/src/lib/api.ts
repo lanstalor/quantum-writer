@@ -170,6 +170,15 @@ export const api = {
   deleteChapter: (id: string) => request(`/chapters/${id}`, { method: 'DELETE' }),
   generateChapter: (data: GenerateChapterRequest) => request('/chapters/generate', { method: 'POST', body: JSON.stringify(data) }),
   reorderChapters: (storyId: string, positions: Record<string, number>) => request(`/chapters/story/${storyId}/reorder`, { method: 'PUT', body: JSON.stringify(positions) }),
+  exportStory: async (id: string) => {
+    const res = await fetch(`${API_URL}/api/v1/stories/${id}/export`, {
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.text();
+  },
   getStoryBranches: (storyId: string) => request(`/branches/story/${storyId}`),
   mergeBranch: (branchId: string) => request(`/branches/${branchId}/merge`, { method: 'POST' }),
 };

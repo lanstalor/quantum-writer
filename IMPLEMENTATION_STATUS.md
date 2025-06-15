@@ -17,6 +17,7 @@ Quantum Writer has progressed from a bare skeleton to a usable MVP. The project 
    - CRUD endpoints for stories, chapters, and branches
    - Chapter generation via the AI service
    - PostgreSQL persistence and async SQLAlchemy
+   - Story export to Markdown
 
 3. **Context Service**
    - Saves and retrieves context per story
@@ -25,6 +26,7 @@ Quantum Writer has progressed from a bare skeleton to a usable MVP. The project 
 4. **Frontend**
    - Next.js 14 editor with chapter reader
    - API calls to story and AI services
+   - Download button for Markdown export
 
 5. **Infrastructure**
    - Docker Compose setup with Kong gateway

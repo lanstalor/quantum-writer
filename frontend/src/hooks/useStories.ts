@@ -54,6 +54,12 @@ export function useDeleteStory() {
   });
 }
 
+export function useExportStory() {
+  return useMutation({
+    mutationFn: (id: string) => api.exportStory(id),
+  });
+}
+
 // Chapter hooks
 export function useStoryChapters(storyId: string) {
   return useQuery({

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import List
@@ -6,6 +6,7 @@ from typing import List
 from app.db.database import get_db
 from app.models.story import Story
 from app.models.branch import Branch
+from app.models.chapter import Chapter
 from app.schemas.story import StoryCreate, StoryUpdate, StoryResponse
 from app.core.security import get_current_user
 
@@ -123,5 +124,43 @@ async def delete_story(
     
     await db.delete(story)
     await db.commit()
-    
+
     return {"message": "Story deleted successfully"}
+
+
+@router.get("/{story_id}/export")
+async def export_story(
+    story_id: str,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    """Export a story and its chapters as Markdown"""
+    result = await db.execute(
+        select(Story).where(Story.id == story_id, Story.user_id == user_id)
+    )
+    story = result.scalar_one_or_none()
+
+    if not story:
+        raise HTTPException(status_code=404, detail="Story not found")
+
+    chapters_result = await db.execute(
+        select(Chapter)
+        .where(Chapter.story_id == story_id)
+        .order_by(Chapter.position)
+    )
+    chapters = chapters_result.scalars().all()
+
+    md_parts = [f"# {story.title}\n"]
+    if story.description:
+        md_parts.append(f"{story.description}\n")
+
+    for chapter in chapters:
+        md_parts.append(f"## Chapter {chapter.position}: {chapter.title}\n")
+        md_parts.append(chapter.content + "\n")
+
+    markdown = "\n".join(md_parts)
+
+    headers = {
+        "Content-Disposition": f"attachment; filename={story.title.replace(' ', '_')}.md"
+    }
+    return Response(content=markdown, media_type="text/markdown", headers=headers)
