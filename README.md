@@ -112,6 +112,17 @@ curl -X POST "http://localhost:8000/api/v1/chapters/generate?model=claude" \
   -d '{"story_id": "STORY_ID", "title": "Chapter 3", "prompt": "Build tension and conflict"}'
 ```
 
+### 5. Semantic Context Search
+```bash
+# Save context segments
+curl -X POST "http://localhost:8000/api/v1/context/STORY_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "A dragon attacks the village"}'
+
+# Find related segments
+curl "http://localhost:8000/api/v1/context/STORY_ID/search?query=dragon"
+```
+
 ## 📚 API Documentation
 
 With services running, visit:
