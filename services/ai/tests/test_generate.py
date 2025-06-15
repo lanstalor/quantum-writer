@@ -12,6 +12,7 @@ async def ai_app(monkeypatch):
     from app.services.groq_service import groq_service
     from app.services.openai_service import openai_service
     from app.services.anthropic_service import anthropic_service
+    from app.api.v1 import generate as generate_module
 
     async def fake_generate_content(*args, **kwargs):
         return "Generated"
@@ -22,6 +23,11 @@ async def ai_app(monkeypatch):
     for service in (groq_service, openai_service, anthropic_service):
         monkeypatch.setattr(service, "generate_content", fake_generate_content)
         monkeypatch.setattr(service, "estimate_tokens", fake_estimate_tokens)
+
+    async def fake_run_analysis(text: str):
+        return None
+
+    monkeypatch.setattr(generate_module, "_run_analysis", fake_run_analysis)
 
     yield app
 

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import StreamingResponse
+import httpx
 from app.schemas.generation import GenerationRequest, GenerationResponse, StreamChunk
 from app.services.anthropic_service import anthropic_service
 from app.services.groq_service import groq_service
@@ -8,6 +9,25 @@ import json
 import asyncio
 
 router = APIRouter()
+
+
+async def _run_analysis(text: str) -> None:
+    """Send generated text to the analysis service."""
+    try:
+        async with httpx.AsyncClient() as client:
+            await client.post(
+                "http://analysis-service:8012/api/v1/analyze/characters",
+                json={"text": text},
+                timeout=10.0,
+            )
+            await client.post(
+                "http://analysis-service:8012/api/v1/analyze/plot",
+                json={"text": text},
+                timeout=10.0,
+            )
+    except Exception:
+        # Analysis failures should not block generation
+        pass
 
 @router.post("/generate", response_model=GenerationResponse)
 async def generate_content(request: GenerationRequest, model: str = Query("groq", description="AI model to use: claude, groq, gpt")):
@@ -38,7 +58,9 @@ async def generate_content(request: GenerationRequest, model: str = Query("groq"
                 system_prompt=request.system_prompt
             )
             tokens_used = anthropic_service.estimate_tokens(content)
-        
+
+        await _run_analysis(content)
+
         return GenerationResponse(
             content=content,
             tokens_used=tokens_used
@@ -113,7 +135,9 @@ async def continue_story(request: GenerationRequest, model: str = Query("groq", 
                 system_prompt=story_system_prompt
             )
             tokens_used = anthropic_service.estimate_tokens(content)
-        
+
+        await _run_analysis(content)
+
         return GenerationResponse(
             content=content,
             tokens_used=tokens_used
