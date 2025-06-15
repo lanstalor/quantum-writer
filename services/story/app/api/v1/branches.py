@@ -1,11 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, update
+from sqlalchemy.sql import func
 from typing import List
 import uuid
 
 from app.db.database import get_db
 from app.models.branch import Branch
+from app.models.chapter import Chapter
 from app.models.story import Story
 from app.schemas.branch import BranchCreate, BranchUpdate, BranchResponse
 from app.core.security import get_current_user
@@ -94,3 +96,40 @@ async def delete_branch(
     await db.delete(branch)
     await db.commit()
     return {"message": "Branch deleted successfully"}
+
+@router.post("/{branch_id}/merge", response_model=BranchResponse)
+async def merge_branch(
+    branch_id: str,
+    db: AsyncSession = Depends(get_db),
+    user_id: str = Depends(get_current_user),
+):
+    result = await db.execute(
+        select(Branch)
+        .join(Story, Branch.story_id == Story.id)
+        .where(Branch.id == branch_id, Story.user_id == user_id)
+    )
+    branch = result.scalar_one_or_none()
+    if not branch:
+        raise HTTPException(status_code=404, detail="Branch not found")
+    if not branch.parent_branch_id:
+        raise HTTPException(status_code=400, detail="Branch has no parent to merge into")
+    if branch.status == "merged":
+        raise HTTPException(status_code=400, detail="Branch already merged")
+
+    result = await db.execute(select(Branch).where(Branch.id == branch.parent_branch_id))
+    parent = result.scalar_one_or_none()
+    if not parent:
+        raise HTTPException(status_code=404, detail="Parent branch not found")
+
+    await db.execute(
+        update(Chapter)
+        .where(Chapter.branch_id == branch.id)
+        .values(branch_id=parent.id, version=Chapter.version + 1)
+    )
+
+    branch.status = "merged"
+    branch.merged_into_id = parent.id
+    branch.merged_at = func.now()
+    await db.commit()
+    await db.refresh(branch)
+    return branch

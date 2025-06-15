@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.db import database as db
 from app.models.branch import Branch
+from app.models.chapter import Chapter
 from app.main import app
 
 @pytest.fixture
@@ -70,3 +71,51 @@ async def test_branch_crud(test_app):
         branches = result.scalars().all()
         assert len(branches) == 1
         assert branches[0].is_main
+
+
+@pytest.mark.asyncio
+async def test_branch_merge(test_app):
+    app, SessionLocal = test_app
+    async with AsyncClient(app=app, base_url="http://test") as ac:
+        resp = await ac.post(
+            "/api/v1/stories/",
+            json={"title": "My Story"},
+        )
+        story_id = resp.json()["id"]
+
+        # get main branch
+        resp = await ac.get(f"/api/v1/branches/story/{story_id}")
+        main_branch_id = [b["id"] for b in resp.json() if b["is_main"]][0]
+
+        # create side branch and chapter
+        resp = await ac.post(
+            "/api/v1/branches/",
+            json={"story_id": story_id, "name": "side"},
+        )
+        child_id = resp.json()["id"]
+
+        await ac.post(
+            "/api/v1/chapters/",
+            json={
+                "story_id": story_id,
+                "branch_id": child_id,
+                "title": "C1",
+                "content": "text",
+            },
+        )
+
+        resp = await ac.post(f"/api/v1/branches/{child_id}/merge")
+        assert resp.status_code == 200
+
+    async with SessionLocal() as session:
+        result = await session.execute(select(Branch).where(Branch.id == child_id))
+        branch = result.scalar_one()
+        assert branch.status == "merged"
+        assert branch.merged_into_id == main_branch_id
+        assert branch.merged_at is not None
+
+        result = await session.execute(select(Chapter).where(Chapter.story_id == story_id))
+        chapters = result.scalars().all()
+        assert len(chapters) == 1
+        assert chapters[0].branch_id == main_branch_id
+        assert chapters[0].version == 2
