@@ -5,6 +5,7 @@ from sqlalchemy import select
 
 from app.db import database as db
 from app.models.branch import Branch
+from app.models.user import User
 from app.main import app
 
 @pytest.fixture
@@ -27,6 +28,7 @@ async def test_app(monkeypatch):
 
     async with test_engine.begin() as conn:
         await conn.run_sync(db.Base.metadata.create_all)
+        await conn.execute(User.__table__.insert().values(id="user1"))
 
     yield app_main.app, TestSessionLocal
 
