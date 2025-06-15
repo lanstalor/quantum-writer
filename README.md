@@ -112,6 +112,13 @@ curl -X POST "http://localhost:8000/api/v1/chapters/generate?model=claude" \
   -d '{"story_id": "STORY_ID", "title": "Chapter 3", "prompt": "Build tension and conflict"}'
 ```
 
+### 5. Export Your Story to Markdown
+```bash
+curl -L http://localhost:8000/api/v1/stories/STORY_ID/export \
+  -H "X-User-Id: test-user" \
+  -o story.md
+```
+
 ## 📚 API Documentation
 
 With services running, visit:
@@ -176,7 +183,7 @@ cd frontend && npm test
 - [ ] Chapter editing and revision capabilities
 - [ ] User authentication and story ownership
 - [ ] Author persona emulation (Pierce Brown, Sanderson, etc.)
-- [ ] Story export to markdown/text formats
+- [x] Story export to markdown/text formats
 - [ ] UI/UX improvements and polish
 
 ### v2.2 (Advanced Features)
