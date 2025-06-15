@@ -19,6 +19,7 @@ A modern, scalable platform for creating AI-assisted interactive narratives with
 - ✅ **Database Persistence**: PostgreSQL with complete story/chapter schema
 - ✅ **API Gateway**: Kong routing with microservices architecture
 - ✅ **Context Continuity**: AI maintains narrative consistency using previous chapters
+- ✅ **Story Analysis**: Basic character extraction and plot summarization
 - ✅ **Docker Environment**: Full containerized development setup
 
 ### 🎯 Key MVP Achievements
@@ -41,7 +42,7 @@ A modern, scalable platform for creating AI-assisted interactive narratives with
 | API Gateway | 8000 | ✅ **Working** | Kong routing |
 | Story Service | 8010 | ✅ **Working** | Story/chapter CRUD with AI |
 | AI Service | 8011 | ✅ **Working** | Multi-model LLM integration |
-| Analysis Service | 8012 | ✅ Skeleton | NLP analysis |
+| Analysis Service | 8012 | ✅ Basic | Character & plot analysis |
 | Context Service | 8013 | ✅ Skeleton | Vector search |
 | Auth Service | 8014 | ✅ Skeleton | Authentication |
 | WebSocket Service | 8015 | ✅ Skeleton | Real-time sync |
@@ -110,6 +111,17 @@ curl -X POST "http://localhost:8000/api/v1/chapters/generate?model=gpt" \
 curl -X POST "http://localhost:8000/api/v1/chapters/generate?model=claude" \
   -H "Content-Type: application/json" \
   -d '{"story_id": "STORY_ID", "title": "Chapter 3", "prompt": "Build tension and conflict"}'
+```
+
+### 5. Semantic Context Search
+```bash
+# Save context segments
+curl -X POST "http://localhost:8000/api/v1/context/STORY_ID" \
+  -H "Content-Type: application/json" \
+  -d '{"content": "A dragon attacks the village"}'
+
+# Find related segments
+curl "http://localhost:8000/api/v1/context/STORY_ID/search?query=dragon"
 ```
 
 ## 📚 API Documentation

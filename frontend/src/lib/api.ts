@@ -48,6 +48,7 @@ export const queryKeys = {
   story: (id: string) => ['stories', id] as const,
   storyChapters: (id: string) => ['stories', id, 'chapters'] as const,
   chapter: (id: string) => ['chapters', id] as const,
+  storyBranches: (id: string) => ['stories', id, 'branches'] as const,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
@@ -123,5 +124,7 @@ export const api = {
   deleteChapter: (id: string) => request(`/chapters/${id}`, { method: 'DELETE' }),
   generateChapter: (data: GenerateChapterRequest) => request('/chapters/generate', { method: 'POST', body: JSON.stringify(data) }),
   reorderChapters: (storyId: string, positions: Record<string, number>) => request(`/chapters/story/${storyId}/reorder`, { method: 'PUT', body: JSON.stringify(positions) }),
+  getStoryBranches: (storyId: string) => request(`/branches/story/${storyId}`),
+  mergeBranch: (branchId: string) => request(`/branches/${branchId}/merge`, { method: 'POST' }),
 };
 
