@@ -19,6 +19,7 @@ A modern, scalable platform for creating AI-assisted interactive narratives with
 - ✅ **Database Persistence**: PostgreSQL with complete story/chapter schema
 - ✅ **API Gateway**: Kong routing with microservices architecture
 - ✅ **Context Continuity**: AI maintains narrative consistency using previous chapters
+- ✅ **Story Analysis**: Basic character extraction and plot summarization
 - ✅ **Docker Environment**: Full containerized development setup
 
 ### 🎯 Key MVP Achievements
@@ -41,7 +42,7 @@ A modern, scalable platform for creating AI-assisted interactive narratives with
 | API Gateway | 8000 | ✅ **Working** | Kong routing |
 | Story Service | 8010 | ✅ **Working** | Story/chapter CRUD with AI |
 | AI Service | 8011 | ✅ **Working** | Multi-model LLM integration |
-| Analysis Service | 8012 | ✅ Skeleton | NLP analysis |
+| Analysis Service | 8012 | ✅ Basic | Character & plot analysis |
 | Context Service | 8013 | ✅ Skeleton | Vector search |
 | Auth Service | 8014 | ✅ Skeleton | Authentication |
 | WebSocket Service | 8015 | ✅ Skeleton | Real-time sync |
