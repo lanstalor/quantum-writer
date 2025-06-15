@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { useStory, useStoryChapters, useUpdateChapter } from '@/hooks/useStories'
+import { useStory, useStoryChapters, useUpdateChapter, useStoryBranches, useMergeBranch } from '@/hooks/useStories'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -22,6 +22,8 @@ export default function EditPage({ params }: EditPageProps) {
   const router = useRouter()
   const { data: story, isLoading: storyLoading } = useStory(params.id)
   const { data: chapters, isLoading: chaptersLoading } = useStoryChapters(params.id)
+  const { data: branches, isLoading: branchesLoading } = useStoryBranches(params.id)
+  const mergeBranch = useMergeBranch()
   const updateChapter = useUpdateChapter()
   const [edited, setEdited] = useState<Record<string, string>>({})
 
@@ -75,6 +77,9 @@ export default function EditPage({ params }: EditPageProps) {
       </Card>
     )
   }
+  const handleMerge = async (branchId: string) => {
+    await mergeBranch.mutateAsync({ storyId: params.id, branchId })
+  }
 
   const handleSave = async (chapterId: string) => {
     const content = edited[chapterId]
@@ -112,6 +117,26 @@ export default function EditPage({ params }: EditPageProps) {
           <h1 className="text-2xl font-bold">Edit: {story.title}</h1>
         </div>
       </div>
+
+      {branchesLoading ? (
+        <p className="text-muted-foreground">Loading branches...</p>
+      ) : branches && branches.length > 0 ? (
+        <div className="space-y-2">
+          <h2 className="text-lg font-semibold">Branches</h2>
+          <ul className="space-y-1">
+            {branches.map(b => (
+              <li key={b.id} className="flex items-center justify-between">
+                <span>
+                  {b.name} {b.status === 'merged' ? '(merged)' : ''}
+                </span>
+                {b.parent_branch_id && b.status === 'active' && (
+                  <Button size="sm" onClick={() => handleMerge(b.id)}>Merge</Button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
 
       {chaptersLoading ? (
         <p className="text-muted-foreground">Loading chapters...</p>

@@ -10,6 +10,8 @@ class Branch(Base):
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     story_id = Column(String, ForeignKey("stories.id"), nullable=False)
     parent_branch_id = Column(String, ForeignKey("branches.id"), nullable=True)
+    merged_into_id = Column(String, ForeignKey("branches.id"), nullable=True)
+    merged_at = Column(DateTime(timezone=True), nullable=True)
     
     name = Column(String(255), nullable=False)
     description = Column(Text)

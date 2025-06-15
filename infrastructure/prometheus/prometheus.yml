@@ -1,0 +1,13 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'quantum-writer-services'
+    static_configs:
+      - targets:
+          - story-service:8000
+          - ai-service:8000
+          - analysis-service:8000
+          - context-service:8000
+          - auth-service:8000
+          - websocket-service:8000

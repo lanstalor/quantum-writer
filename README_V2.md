@@ -109,10 +109,25 @@ make test       # Run all tests
 make lint       # Lint code
 
 # Database
-make migrate    # Run migrations
+make migrate    # Run migrations for all services
 
 # Cleanup
 make clean      # Remove containers and volumes
+```
+
+### Database Migrations
+
+Generate a new migration for a service:
+
+```bash
+cd services/<service-name>
+alembic revision --autogenerate -m "your message"
+```
+
+Apply migrations to all services:
+
+```bash
+make migrate
 ```
 
 ### Adding a New Feature
@@ -164,6 +179,11 @@ Once services are running, access interactive API docs:
 - Analysis Service: http://localhost:8012/api/docs
 - Context Service: http://localhost:8013/api/docs
 - Auth Service: http://localhost:8014/api/docs
+
+### Monitoring
+
+- Prometheus: http://localhost:9090
+- Grafana: http://localhost:3001
 
 ## 🚀 Deployment
 
