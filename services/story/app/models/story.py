@@ -13,8 +13,8 @@ class Story(Base):
     description = Column(Text)
     story_metadata = Column(JSON, default={})
     
-    # User relationship (will be added with auth service)
-    user_id = Column(String, nullable=False)
+    # User relationship
+    user_id = Column(String, ForeignKey("users.id"), nullable=False)
     
     # Timestamps
     created_at = Column(DateTime(timezone=True), server_default=func.now())
