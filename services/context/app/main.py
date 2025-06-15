@@ -4,7 +4,12 @@ from contextlib import asynccontextmanager
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
-from app.core import settings
+from app.core import (
+    settings,
+    init_vector_store,
+    store_context_segment,
+    search_story_segments,
+)
 from app.db.database import engine, Base, get_db
 from app.models import StoryContext
 from app.schemas import ContextCreate, ContextResponse
@@ -27,6 +32,7 @@ def summarize_content(content: str, max_tokens: int) -> str:
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+    await init_vector_store()
     yield
     await engine.dispose()
 
@@ -58,6 +64,9 @@ async def save_context(
         )
         db.add(ctx)
 
+    # Store embedding for the new content segment
+    await store_context_segment(story_id, context.content)
+
     await db.commit()
     await db.refresh(ctx)
     return ctx
@@ -73,4 +82,10 @@ async def get_context(
     if not ctx:
         raise HTTPException(status_code=404, detail="Context not found")
     return ctx
+
+
+@app.get("/api/v1/context/{story_id}/search")
+async def search_context(story_id: str, query: str, limit: int = 5):
+    results = await search_story_segments(story_id, query, limit)
+    return {"results": results}
 
