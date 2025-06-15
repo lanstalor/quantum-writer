@@ -1,6 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { getToken } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -27,6 +29,7 @@ const GENRES = [
 ];
 
 export default function StoriesPage() {
+  const router = useRouter();
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newStory, setNewStory] = useState({
     title: '',
@@ -36,6 +39,12 @@ export default function StoriesPage() {
 
   const { data: stories, isLoading, error } = useStories();
   const createStoryMutation = useCreateStory();
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.push('/login');
+    }
+  }, [router]);
 
   const handleCreateStory = async (e: React.FormEvent) => {
     e.preventDefault();
