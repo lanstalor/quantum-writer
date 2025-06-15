@@ -1,7 +1,9 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.core import settings
+from pydantic import BaseModel
+from app.services.analysis_engine import AnalysisEngine
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,4 +16,25 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, 
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": settings.SERVICE_NAME}
+
+
+class TextRequest(BaseModel):
+    text: str
+
+
+@app.post("/api/v1/analyze/characters")
+async def analyze_characters(request: TextRequest):
+    try:
+        characters = AnalysisEngine.extract_characters(request.text)
+        return {"characters": characters}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/api/v1/analyze/plot")
+async def analyze_plot(request: TextRequest):
+    try:
+        return AnalysisEngine.analyze_plot(request.text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 

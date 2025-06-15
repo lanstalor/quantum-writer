@@ -43,7 +43,7 @@ Quantum Writer has progressed from a bare skeleton to a usable MVP. The project 
    - UI for exploring alternative narratives
 
 3. **Analysis Service**
-   - NLP and plot analysis features still empty
+   - Basic character extraction and plot analysis implemented
 
 4. **Authentication & Collaboration**
    - JWT auth only partially implemented

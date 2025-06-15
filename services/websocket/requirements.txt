@@ -5,3 +5,10 @@ pydantic-settings==2.1.0
 httpx==0.26.0
 pytest==7.4.4
 pytest-asyncio==0.23.3
+y-py==0.6.0
+ypy-websocket==0.8.2
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+sqlalchemy==2.0.25
+asyncpg==0.29.0
+alembic==1.13.1

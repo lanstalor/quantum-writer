@@ -48,10 +48,12 @@ export const queryKeys = {
   story: (id: string) => ['stories', id] as const,
   storyChapters: (id: string) => ['stories', id, 'chapters'] as const,
   chapter: (id: string) => ['chapters', id] as const,
+  storyBranches: (id: string) => ['stories', id, 'branches'] as const,
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 let token: string | null = null;
+let refreshToken: string | null = null;
 export function setToken(t: string | null) {
   token = t;
   if (typeof window !== 'undefined') {
@@ -60,8 +62,20 @@ export function setToken(t: string | null) {
   }
 }
 
+export function setRefreshToken(t: string | null) {
+  refreshToken = t;
+  if (typeof window !== 'undefined') {
+    if (t) localStorage.setItem('refreshToken', t);
+    else localStorage.removeItem('refreshToken');
+  }
+}
+
 export function getToken() {
   return token;
+}
+
+export function getRefreshToken() {
+  return refreshToken;
 }
 
 export function isLoggedIn() {
@@ -71,17 +85,31 @@ export function isLoggedIn() {
 if (typeof window !== 'undefined') {
   const saved = localStorage.getItem('token');
   if (saved) token = saved;
+  const savedRefresh = localStorage.getItem('refreshToken');
+  if (savedRefresh) refreshToken = savedRefresh;
 }
 
 async function request(path: string, options: RequestInit = {}) {
-  const res = await fetch(`${API_URL}/api/v1${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-    },
-  });
+  const doRequest = async () =>
+    fetch(`${API_URL}/api/v1${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(options.headers || {}),
+      },
+    });
+
+  let res = await doRequest();
+  if (res.status === 401 && refreshToken) {
+    try {
+      await refreshAccessToken();
+      res = await doRequest();
+    } catch {
+      logout();
+      throw new Error('Unauthorized');
+    }
+  }
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
@@ -95,6 +123,7 @@ export async function register(data: { username: string; password: string }) {
   if (!res.ok) throw new Error(await res.text());
   const json = await res.json();
   setToken(json.access_token);
+  setRefreshToken(json.refresh_token);
   return json;
 }
 
@@ -107,7 +136,25 @@ export async function login(data: { username: string; password: string }) {
   if (!res.ok) throw new Error(await res.text());
   const json = await res.json();
   setToken(json.access_token);
+  setRefreshToken(json.refresh_token);
   return json;
+}
+
+export async function refreshAccessToken() {
+  if (!refreshToken) throw new Error('No refresh token');
+  const res = await fetch(`${API_URL}/refresh?refresh=${encodeURIComponent(refreshToken)}`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw new Error(await res.text());
+  const data = await res.json();
+  setToken(data.access_token);
+  setRefreshToken(data.refresh_token);
+  return data;
+}
+
+export function logout() {
+  setToken(null);
+  setRefreshToken(null);
 }
 
 export const api = {
@@ -132,5 +179,7 @@ export const api = {
     if (!res.ok) throw new Error(await res.text());
     return res.text();
   },
+  getStoryBranches: (storyId: string) => request(`/branches/story/${storyId}`),
+  mergeBranch: (branchId: string) => request(`/branches/${branchId}/merge`, { method: 'POST' }),
 };
 
