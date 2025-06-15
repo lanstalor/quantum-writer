@@ -47,6 +47,8 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/quantum_writer
       - REDIS_URL=redis://redis:6379
       - SERVICE_NAME=story-service
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     depends_on:
       - db
       - redis
@@ -70,6 +72,8 @@ services:
     depends_on:
       - db
       - redis
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   # Analysis Service
   analysis-service:
@@ -89,6 +93,8 @@ services:
       - db
       - redis
       - qdrant
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   # Context Service
   context-service:
@@ -108,6 +114,8 @@ services:
       - db
       - redis
       - qdrant
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   # Auth Service
   auth-service:
@@ -126,6 +134,8 @@ services:
     depends_on:
       - db
       - redis
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   # WebSocket Service
   websocket-service:
@@ -141,6 +151,8 @@ services:
       - SERVICE_NAME=websocket-service
     depends_on:
       - redis
+    command: >
+      sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
   # PostgreSQL Database
   db:
@@ -194,8 +206,29 @@ services:
     depends_on:
       - db
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./infrastructure/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    depends_on:
+      - story-service
+
+  grafana:
+    image: grafana/grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
 volumes:
   postgres_data:
   redis_data:
   qdrant_data:
   es_data:
+  prometheus_data:
+  grafana_data:
