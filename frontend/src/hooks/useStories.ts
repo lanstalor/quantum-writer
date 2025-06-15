@@ -140,3 +140,24 @@ export function useReorderChapters() {
     },
   });
 }
+
+export function useStoryBranches(storyId: string) {
+  return useQuery({
+    queryKey: queryKeys.storyBranches(storyId),
+    queryFn: () => api.getStoryBranches(storyId),
+    enabled: !!storyId,
+  });
+}
+
+export function useMergeBranch() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ storyId, branchId }: { storyId: string; branchId: string }) =>
+      api.mergeBranch(branchId),
+    onSuccess: (_, { storyId }) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.storyBranches(storyId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.storyChapters(storyId) });
+    },
+  });
+}

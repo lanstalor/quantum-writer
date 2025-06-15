@@ -25,5 +25,7 @@ class BranchResponse(BranchBase):
     id: str
     story_id: str
     is_main: bool = False
+    merged_into_id: Optional[str] = None
+    merged_at: Optional[datetime] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
