@@ -6,9 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Link from 'next/link'
-import { login } from '@/lib/api'
+import { register } from '@/lib/api'
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter()
   const [form, setForm] = useState({ username: '', password: '' })
   const [error, setError] = useState('')
@@ -17,10 +17,10 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     try {
-      await login(form)
+      await register(form)
       router.push('/stories')
     } catch (err: any) {
-      setError('Failed to login')
+      setError('Failed to register')
     }
   }
 
@@ -29,22 +29,32 @@ export default function LoginPage() {
       <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
         <div className="space-y-2">
           <Label htmlFor="username">Username</Label>
-          <Input id="username" value={form.username} onChange={e => setForm({ ...form, username: e.target.value })} required />
+          <Input
+            id="username"
+            value={form.username}
+            onChange={(e) => setForm({ ...form, username: e.target.value })}
+            required
+          />
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input type="password" id="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} required />
+          <Input
+            type="password"
+            id="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
+            required
+          />
         </div>
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <Button type="submit" className="w-full">Login</Button>
+        <Button type="submit" className="w-full">Register</Button>
         <p className="text-center text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <Link href="/login/register" className="underline">
-            Register
+          Already have an account?{' '}
+          <Link href="/login" className="underline">
+            Login
           </Link>
         </p>
       </form>
     </div>
   )
 }
-

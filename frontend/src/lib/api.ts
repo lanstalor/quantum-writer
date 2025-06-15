@@ -60,6 +60,14 @@ export function setToken(t: string | null) {
   }
 }
 
+export function getToken() {
+  return token;
+}
+
+export function isLoggedIn() {
+  return !!token;
+}
+
 if (typeof window !== 'undefined') {
   const saved = localStorage.getItem('token');
   if (saved) token = saved;

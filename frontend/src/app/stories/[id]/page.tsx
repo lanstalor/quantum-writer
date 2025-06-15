@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getToken } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -32,6 +33,12 @@ export default function StoryPage({ params }: StoryPageProps) {
   const { data: story, isLoading: storyLoading, error: storyError } = useStory(params.id);
   const { data: chapters, isLoading: chaptersLoading } = useStoryChapters(params.id);
   const generateChapterMutation = useGenerateChapter();
+
+  useEffect(() => {
+    if (!getToken()) {
+      router.push('/login');
+    }
+  }, [router]);
 
   const handleGenerateChapter = async (e: React.FormEvent) => {
     e.preventDefault();
