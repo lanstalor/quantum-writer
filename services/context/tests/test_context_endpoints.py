@@ -1,4 +1,5 @@
 import pytest
+import pytest_asyncio
 from httpx import AsyncClient
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import select
@@ -7,7 +8,7 @@ from app.db import database as db
 from app.models.context import StoryContext
 from app import core
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def test_app(monkeypatch):
     test_engine = create_async_engine("sqlite+aiosqlite:///:memory:", future=True)
     TestSessionLocal = async_sessionmaker(test_engine, expire_on_commit=False, class_=AsyncSession)
@@ -32,6 +33,8 @@ async def test_app(monkeypatch):
     app_main.app.dependency_overrides[db.get_db] = override_get_db
     monkeypatch.setattr(core, "store_context_segment", fake_store)
     monkeypatch.setattr(core, "search_story_segments", fake_search)
+    monkeypatch.setattr(app_main, "store_context_segment", fake_store, raising=False)
+    monkeypatch.setattr(app_main, "search_story_segments", fake_search, raising=False)
 
     async with test_engine.begin() as conn:
         await conn.run_sync(db.Base.metadata.create_all)
