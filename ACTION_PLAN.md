@@ -4,7 +4,6 @@
 - Stabilize the developer experience so services and tests run locally without external infrastructure.
 - Harden critical context-service functionality to gracefully degrade when vector search infrastructure is unavailable.
 - Validate the end-to-end context workflows with automated tests as a baseline for the wider application.
-- Stand up a production-ready deployment path for the frontend with Cloudflare Pages and Access single-sign-on.
 
 ## Deliverables
 1. **Developer Ergonomics** – Ensure the context service package resolves cleanly when the monorepo root contains legacy modules.
@@ -19,7 +18,6 @@
    - Implement an in-memory vector store fallback with deterministic embeddings.
    - Guard store/search lifecycles so database operations succeed even when Qdrant is unreachable.
 3. Re-run the FastAPI test suite (`pytest services/context/tests`) to confirm the service operates end-to-end with the new fallback behaviour.
-4. Automate the Cloudflare Pages build/deploy cycle and bridge Cloudflare Access identities into the existing auth service for passwordless logins.
 
 ## Validation
 - Automated: `pytest services/context/tests`
