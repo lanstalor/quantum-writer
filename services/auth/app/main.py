@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Depends
+from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
@@ -7,8 +7,10 @@ from passlib.context import CryptContext
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from typing import Dict
+from uuid import uuid4
 
 from app.core import settings
+from app.cloudflare import verify_access_token
 from app.schemas import UserCreate, Token
 from app.db.database import Base, engine, get_db
 from app.models.user import User
@@ -21,7 +23,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Quantum Writer Auth Service", version="2.0.0", docs_url="/api/docs", redoc_url="/api/redoc", lifespan=lifespan)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -112,4 +114,48 @@ async def login(user: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     token = create_access_token({"sub": user.username})
     return {"access_token": token, "refresh_token": refresh, "token_type": "bearer"}
+
+
+@app.post("/login/cloudflare", response_model=Token)
+async def login_with_cloudflare_access(
+    request: Request,
+    db: AsyncSession = Depends(get_db),
+    cf_authorization: str | None = Header(default=None, alias="CF-Authorization"),
+):
+    token = cf_authorization or request.cookies.get("CF_Authorization")
+    if not token:
+        raise HTTPException(status_code=401, detail="Missing Cloudflare Access token")
+    claims = await verify_access_token(token)
+
+    email_claim = settings.CLOUDFLARE_ACCESS_EMAIL_CLAIM or "email"
+    email = claims.get(email_claim) or claims.get("email") or claims.get("identity")
+    if not email:
+        raise HTTPException(status_code=400, detail="Cloudflare Access token missing email claim")
+    username = email.lower()
+
+    if settings.CLOUDFLARE_ACCESS_ALLOWED_EMAILS and username not in settings.CLOUDFLARE_ACCESS_ALLOWED_EMAILS:
+        raise HTTPException(status_code=403, detail="Email not authorized")
+
+    if settings.CLOUDFLARE_ACCESS_ALLOWED_DOMAINS:
+        domain = username.split("@")[-1]
+        if domain not in settings.CLOUDFLARE_ACCESS_ALLOWED_DOMAINS:
+            raise HTTPException(status_code=403, detail="Email domain not authorized")
+
+    result = await db.execute(select(User).where(User.username == username))
+    db_user = result.scalar_one_or_none()
+    if not db_user:
+        random_password = uuid4().hex
+        db_user = User(
+            username=username,
+            hashed_password=get_password_hash(random_password),
+            refresh_token="",
+        )
+        db.add(db_user)
+        await db.flush()
+
+    refresh = create_refresh_token({"sub": username})
+    db_user.refresh_token = refresh
+    await db.commit()
+    access = create_access_token({"sub": username})
+    return {"access_token": access, "refresh_token": refresh, "token_type": "bearer"}
 

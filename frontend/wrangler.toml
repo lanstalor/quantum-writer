@@ -1,0 +1,4 @@
+name = "quantum-writer-frontend"
+pages_build_output_dir = ".vercel/output/static"
+pages_functions_dir = ".vercel/output/functions"
+compatibility_date = "2024-05-01"

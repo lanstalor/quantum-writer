@@ -153,12 +153,30 @@ asyncio.run(Base.metadata.create_all(engine))
 "
 ```
 
-### Frontend Development  
+### Frontend Development
 ```bash
 cd frontend
 npm install
 npm run dev  # http://localhost:3000
 ```
+
+## ☁️ Cloudflare Pages Deployment & Access Login
+
+The repository ships with an automated workflow (`deploy-cloudflare-pages.yml`) that builds the Next.js frontend using `@cloudflare/next-on-pages` and publishes it to Cloudflare Pages. Configure the following secrets/variables in GitHub (or your CI system) before enabling the workflow (see [Cloudflare Deployment & Access Login Setup](infrastructure/cloudflare/SETUP.md) for the complete walkthrough):
+
+| Key | Purpose |
+| --- | ------- |
+| `CLOUDFLARE_API_TOKEN` | API token with Pages deploy permissions |
+| `CLOUDFLARE_ACCOUNT_ID` | Cloudflare account identifier |
+| `CLOUDFLARE_PAGES_PROJECT` | Target Cloudflare Pages project slug |
+| `NEXT_PUBLIC_API_URL` | Gateway URL exposed to the browser |
+| `NEXT_PUBLIC_WS_URL` | Public websocket endpoint |
+| `AUTH_SERVICE_URL` | Origin URL for the auth service (used by server routes) |
+| `CLOUDFLARE_ACCESS_AUDIENCE` | Audience tag from your Cloudflare Access app |
+| `CLOUDFLARE_ACCESS_TEAM_DOMAIN` | `<team>.cloudflareaccess.com` domain |
+| `NEXT_PUBLIC_CLOUDFLARE_ACCESS_LOGIN` | Set to `true` to enable automatic Access logins |
+
+When Access integration is enabled, visiting the Cloudflare Pages site will prompt the Access challenge. The frontend then exchanges the resulting `CF_Authorization` token against the auth service `/login/cloudflare` endpoint, automatically provisioning users and storing Quantum Writer access/refresh tokens for downstream API calls. Local development remains unaffected: keep `NEXT_PUBLIC_CLOUDFLARE_ACCESS_LOGIN` unset (default `false`) to continue using username/password authentication.
 
 ### Testing
 ```bash
